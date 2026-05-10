@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>d0t — dotfiles manager</title>
+  <meta name="description" content="A dotfiles manager with an explicit manifest DSL. Declare every file, hook, and package. Nothing inferred.">
+  <style>
+    :root {
+      --bg:        #1e1e2e;
+      --mantle:    #181825;
+      --crust:     #11111b;
+      --surface0:  #313244;
+      --surface1:  #45475a;
+      --surface2:  #585b70;
+      --overlay0:  #6c7086;
+      --overlay1:  #7f849c;
+      --text:      #cdd6f4;
+      --subtext0:  #a6adc8;
+      --subtext1:  #bac2de;
+      --lavender:  #b4befe;
+      --blue:      #89b4fa;
+      --sapphire:  #74c7ec;
+      --sky:       #89dceb;
+      --teal:      #94e2d5;
+      --green:     #a6e3a1;
+      --yellow:    #f9e2af;
+      --peach:     #fab387;
+      --maroon:    #eba0ac;
+      --red:       #f38ba8;
+      --mauve:     #cba6f7;
+      --pink:      #f5c2e7;
+      --border:    #313244;
+      --radius:    6px;
+      --mono:      "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+      --sans:      -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --sidebar-w: 240px;
+      --content-max: 760px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.7;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── sidebar ── */
+    nav {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--mantle);
+      border-right: 1px solid var(--border);
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      overflow-y: auto;
+      padding: 0 0 32px;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+    }
+    .nav-logo-mark {
+      width: 32px; height: 32px;
+      background: var(--blue);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--crust);
+      flex-shrink: 0;
+    }
+    .nav-logo-text { font-weight: 700; color: var(--text); font-size: 16px; }
+    .nav-logo-sub  { font-size: 11px; color: var(--subtext0); }
+
+    .nav-section {
+      padding: 20px 0 4px;
+    }
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--overlay0);
+      padding: 0 20px 6px;
+    }
+    nav a {
+      display: block;
+      padding: 5px 20px;
+      color: var(--subtext0);
+      text-decoration: none;
+      font-size: 13.5px;
+      border-left: 2px solid transparent;
+      transition: color .1s, border-color .1s, background .1s;
+    }
+    nav a:hover {
+      color: var(--text);
+      background: rgba(137,180,250,.06);
+    }
+    nav a.active {
+      color: var(--blue);
+      border-left-color: var(--blue);
+      background: rgba(137,180,250,.08);
+    }
+
+    /* ── main content ── */
+    main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* ── hero ── */
+    .hero {
+      background: linear-gradient(135deg, var(--crust) 0%, var(--mantle) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 72px 64px 64px;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(137,180,250,.12);
+      border: 1px solid rgba(137,180,250,.25);
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .hero h1 span { color: var(--blue); }
+    .hero p {
+      font-size: 17px;
+      color: var(--subtext0);
+      max-width: 540px;
+      margin-bottom: 28px;
+    }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 20px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:hover { opacity: .85; transform: translateY(-1px); }
+    .btn-primary { background: var(--blue); color: var(--crust); }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--surface1);
+      color: var(--subtext0);
+    }
+
+    .hero-terminal {
+      margin-top: 40px;
+      background: var(--crust);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      max-width: 560px;
+    }
+    .hero-terminal-bar {
+      background: var(--surface0);
+      padding: 8px 12px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .hero-terminal-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .hero-terminal pre {
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.7;
+      border: none;
+      background: transparent;
+      margin: 0;
+    }
+
+    /* ── feature grid ── */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .feature {
+      background: var(--bg);
+      padding: 28px 32px;
+    }
+    .feature-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    .feature h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    .feature p  { font-size: 13px; color: var(--subtext0); line-height: 1.5; }
+
+    /* ── sections ── */
+    section {
+      padding: 64px;
+      border-bottom: 1px solid var(--border);
+      max-width: calc(var(--content-max) + 128px);
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--mauve);
+      margin-bottom: 8px;
+    }
+    h2 {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--blue);
+      margin: 32px 0 10px;
+    }
+    h3:first-of-type { margin-top: 24px; }
+    p  { color: var(--subtext0); margin-bottom: 14px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text); font-weight: 600; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── code ── */
+    pre {
+      background: var(--mantle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.65;
+      margin: 14px 0 22px;
+    }
+    code {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      background: var(--surface0);
+      border: 1px solid var(--surface1);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--peach);
+    }
+    pre code { background: none; border: none; padding: 0; font-size: inherit; color: inherit; }
+
+    /* syntax colours */
+    .c  { color: var(--surface2); }
+    .k  { color: var(--mauve); }
+    .s  { color: var(--green); }
+    .p  { color: var(--peach); }
+    .n  { color: var(--sapphire); }
+    .cm { color: var(--teal); }
+
+    /* ── callout ── */
+    .callout {
+      border-left: 3px solid;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: 13.5px;
+    }
+    .callout.info   { border-color: var(--blue);   background: rgba(137,180,250,.07); }
+    .callout.tip    { border-color: var(--green);  background: rgba(166,227,161,.07); }
+    .callout.warn   { border-color: var(--yellow); background: rgba(249,226,175,.07); }
+    .callout p { margin: 0; color: var(--subtext1); }
+    .callout strong { color: var(--text); }
+
+    /* ── table ── */
+    table { width: 100%; border-collapse: collapse; margin: 14px 0 22px; font-size: 13.5px; }
+    th {
+      text-align: left;
+      padding: 8px 14px;
+      background: var(--surface0);
+      color: var(--subtext0);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 14px;
+      border-bottom: 1px solid rgba(49,50,68,.6);
+      vertical-align: top;
+      color: var(--subtext1);
+    }
+    td:first-child { color: var(--peach); font-family: var(--mono); font-size: 12.5px; }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── command table — no mono first col ── */
+    .cmd-table td:first-child { color: var(--blue); }
+
+    /* ── dsl keyword block ── */
+    .keyword-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0 24px;
+    }
+    .keyword-card {
+      background: var(--mantle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .keyword-card .kw {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--mauve);
+      margin-bottom: 4px;
+    }
+    .keyword-card .kw .args { color: var(--peach); font-weight: 400; }
+    .keyword-card p { font-size: 12.5px; color: var(--subtext0); margin: 0; }
+
+    /* ── footer ── */
+    footer {
+      padding: 32px 64px;
+      color: var(--overlay0);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    footer a { color: var(--overlay1); }
+
+    /* ── responsive ── */
+    @media (max-width: 900px) {
+      nav { display: none; }
+      main { margin-left: 0; }
+      .hero { padding: 40px 24px; }
+      section { padding: 40px 24px; }
+      .features { grid-template-columns: 1fr; }
+      .keyword-grid { grid-template-columns: 1fr; }
+      footer { padding: 24px; flex-direction: column; gap: 8px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── sidebar ── -->
+<nav id="sidebar">
+  <a class="nav-logo" href="#top">
+    <div class="nav-logo-mark">d0</div>
+    <div>
+      <div class="nav-logo-text">d0t</div>
+      <div class="nav-logo-sub">dotfiles manager</div>
+    </div>
+  </a>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Getting started</div>
+    <a href="#install">Install</a>
+    <a href="#quickstart">Quick start</a>
+    <a href="#concepts">Concepts</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">The d0tfile</div>
+    <a href="#dsl">DSL syntax</a>
+    <a href="#primitives">Primitives</a>
+    <a href="#packages">Packages</a>
+    <a href="#hooks">Hooks</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Profiles</div>
+    <a href="#profiles">Layering</a>
+    <a href="#roots">Filesystem roots</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Features</div>
+    <a href="#secrets">Secrets</a>
+    <a href="#templates">Templates</a>
+    <a href="#fragments">Fragments</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Reference</div>
+    <a href="#commands">Commands</a>
+    <a href="#flags">Global flags</a>
+    <a href="#config">d0t.toml</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Guides</div>
+    <a href="migration-from-stow.html">Migrate from stow →</a>
+  </div>
+</nav>
+
+<!-- ── main ── -->
+<main id="top">
+
+  <!-- hero -->
+  <div class="hero">
+    <div class="hero-badge">MIT License · Go · macOS &amp; Linux</div>
+    <h1>Dotfiles, <span>declared.</span></h1>
+    <p>d0t is a dotfiles manager with an explicit manifest DSL. Every file, hook,
+    and package is declared in a <code>d0tfile</code>. Nothing is inferred from
+    directory layout or filename conventions.</p>
+    <div class="hero-actions">
+      <a href="#install" class="btn btn-primary">Get started</a>
+      <a href="https://github.com/callmeradical/d0t" class="btn btn-secondary">GitHub →</a>
+    </div>
+    <div class="hero-terminal">
+      <div class="hero-terminal-bar">
+        <div class="hero-terminal-dot" style="background:#f38ba8"></div>
+        <div class="hero-terminal-dot" style="background:#f9e2af"></div>
+        <div class="hero-terminal-dot" style="background:#a6e3a1"></div>
+      </div>
+      <pre><span class="c"># base/d0tfile</span>
+
+<span class="k">link</span>   <span class="p">home/.zshrc</span>
+<span class="k">link</span>   <span class="p">xdg/nvim</span>
+<span class="k">copy</span>   <span class="p">home/.ssh/config</span>  <span class="n">mode=0600</span>
+<span class="k">tmpl</span>   <span class="p">home/.gitconfig</span>
+
+<span class="k">brew</span>   <span class="s">ripgrep neovim bat fzf lazygit</span>
+<span class="k">cask</span>   <span class="s">ghostty raycast</span>
+
+<span class="k">hook</span>   <span class="n">post-apply</span> <span class="p">hooks/post-apply.sh</span></pre>
+    </div>
+  </div>
+
+  <!-- features -->
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon" style="background:rgba(137,180,250,.12)">📋</div>
+      <h3>Explicit by design</h3>
+      <p>The <code>d0tfile</code> is the source of truth. Files in your repo are
+      just storage — nothing is auto-discovered.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon" style="background:rgba(166,227,161,.12)">🔀</div>
+      <h3>Profile layering</h3>
+      <p>Stack <code>base</code> → <code>os/darwin</code> → <code>hosts/work-mbp</code>.
+      Later profiles override earlier ones per target path.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon" style="background:rgba(203,166,247,.12)">🔑</div>
+      <h3>Secret injection</h3>
+      <p>Reference 1Password, macOS Keychain, or env vars directly in templates.
+      Secrets never touch the repo.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon" style="background:rgba(250,179,135,.12)">📦</div>
+      <h3>Package management</h3>
+      <p>Declare brew formulae, casks, taps, apt packages, and mas apps alongside
+      your config files.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon" style="background:rgba(148,226,213,.12)">⚡</div>
+      <h3>Idempotent</h3>
+      <p>Re-running <code>d0t apply</code> is always safe. State is tracked so
+      <code>d0t remove</code> cleanly undoes everything.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon" style="background:rgba(249,226,175,.12)">🔧</div>
+      <h3>Single static binary</h3>
+      <p>No runtime dependencies. One Go binary. Works on macOS and Linux.
+      Bootstraps fresh machines from zero.</p>
+    </div>
+  </div>
+
+  <!-- install -->
+  <section id="install">
+    <div class="section-label">Getting started</div>
+    <h2>Install</h2>
+
+    <h3>Build from source</h3>
+<pre>git clone https://github.com/callmeradical/d0t ~/.d0t-src
+go build -o ~/.local/bin/d0t ~/.d0t-src/cmd/d0t</pre>
+
+    <h3>go install</h3>
+<pre>go install github.com/callmeradical/d0t/cmd/d0t@latest</pre>
+
+    <div class="callout info">
+      <p><strong>Requires Go 1.21+.</strong> Make sure <code>~/.local/bin</code>
+      (or your <code>$GOPATH/bin</code>) is in your <code>$PATH</code>.</p>
+    </div>
+
+    <h3>Verify</h3>
+<pre>d0t
+<span class="c"># usage: d0t [global flags] &lt;command&gt; [args]</span></pre>
+  </section>
+
+  <!-- quickstart -->
+  <section id="quickstart">
+    <div class="section-label">Getting started</div>
+    <h2>Quick start</h2>
+
+<pre><span class="c"># 1. Scaffold a new repo</span>
+d0t init                     <span class="c"># creates ~/.d0t with starter d0tfile</span>
+
+<span class="c"># 2. Adopt existing config files into the repo</span>
+d0t adopt ~/.zshrc           <span class="c"># moves file in, replaces with symlink</span>
+d0t adopt ~/.gitconfig
+
+<span class="c"># 3. Preview what apply will do</span>
+d0t plan
+
+<span class="c"># 4. Apply — link files, run hooks, install packages</span>
+d0t apply</pre>
+
+    <p>The repo defaults to <code>~/.d0t</code>. Override with <code>--repo /path</code>
+    or the <code>$D0T_REPO</code> environment variable.</p>
+
+    <div class="callout tip">
+      <p><strong>Tip:</strong> Set <code>export D0T_REPO="$HOME/.d0t"</code>
+      in your <code>.zshenv</code> so you never need to pass <code>--repo</code>.</p>
+    </div>
+  </section>
+
+  <!-- concepts -->
+  <section id="concepts">
+    <div class="section-label">Getting started</div>
+    <h2>Core concepts</h2>
+
+    <h3>The d0tfile</h3>
+    <p>Every profile directory contains a <code>d0tfile</code>. This is d0t's
+    source of truth — like a Makefile or a Chef recipe. Only what is declared
+    gets managed. Source files sitting in <code>home/</code> or <code>xdg/</code>
+    are ignored unless they appear in the d0tfile.</p>
+
+    <h3>Profiles</h3>
+    <p>A profile is a directory inside your repo. Profiles layer in order:
+    <code>base</code> → <code>os/darwin</code> → <code>hosts/work-mbp</code>.
+    For any target path, the last profile to declare it wins. Hooks and packages
+    accumulate across all profiles.</p>
+
+    <h3>Primitives</h3>
+    <p>There are six primitives: <code>link</code>, <code>copy</code>,
+    <code>template</code>, <code>fragment</code>, <code>exec</code> (hooks),
+    and <code>pkg</code>. Each is declared with a keyword on one line of the
+    d0tfile.</p>
+
+    <h3>State</h3>
+    <p>d0t tracks every managed target in
+    <code>~/.local/state/d0t/state.json</code>. This lets <code>d0t remove</code>
+    safely undo exactly what <code>d0t apply</code> created, and lets
+    <code>d0t status</code> detect drift.</p>
+  </section>
+
+  <!-- dsl -->
+  <section id="dsl">
+    <div class="section-label">The d0tfile</div>
+    <h2>DSL syntax</h2>
+
+    <p>The d0tfile is a line-oriented manifest. One declaration per line.
+    <code>#</code> starts a comment (full-line or inline). Blank lines are
+    ignored. Keywords are case-insensitive.</p>
+
+<pre><span class="c"># base/d0tfile — full example</span>
+
+<span class="c"># ── file primitives ──────────────────────────────────</span>
+<span class="k">link</span>     <span class="p">home/.zshrc</span>
+<span class="k">link</span>     <span class="p">home/.zshenv</span>
+<span class="k">link</span>     <span class="p">xdg/nvim</span>                   <span class="c"># links the whole directory</span>
+<span class="k">copy</span>     <span class="p">home/.ssh/config</span>  <span class="n">mode=0600</span>
+<span class="k">tmpl</span>     <span class="p">home/.gitconfig</span>             <span class="c"># rendered with Go text/template</span>
+<span class="k">fragment</span> <span class="p">fragments/path.fragment</span>      <span class="c"># injects block into target file</span>
+
+<span class="c"># ── hooks ────────────────────────────────────────────</span>
+<span class="k">hook</span>     <span class="n">pre-apply</span>  <span class="p">hooks/pre-apply.sh</span>
+<span class="k">hook</span>     <span class="n">post-apply</span> <span class="p">hooks/post-apply.sh</span>  <span class="n">optional</span>
+
+<span class="c"># ── packages ─────────────────────────────────────────</span>
+<span class="k">tap</span>      <span class="s">homebrew/cask-fonts</span>
+<span class="k">brew</span>     <span class="s">ripgrep neovim bat fzf lazygit starship tmux</span>
+<span class="k">cask</span>     <span class="s">ghostty raycast font-monaspice-nerd-font</span>
+<span class="k">apt</span>      <span class="s">ripgrep neovim bat</span>
+<span class="k">mas</span>      <span class="n">497799835</span>  <span class="s">Xcode</span></pre>
+
+    <h3>Source paths</h3>
+    <p>Source paths are relative to the profile directory. The leading component
+    (<code>home/</code>, <code>xdg/</code>, etc.) selects the filesystem root
+    and is mapped to the target location:</p>
+    <table>
+      <tr><th>Source prefix</th><th>Maps to</th></tr>
+      <tr><td>home/</td><td>$HOME</td></tr>
+      <tr><td>xdg/</td><td>$XDG_CONFIG_HOME (default ~/.config)</td></tr>
+      <tr><td>etc/</td><td>/etc</td></tr>
+      <tr><td>fragments/</td><td>target declared in file frontmatter</td></tr>
+    </table>
+
+    <p>Override the target explicitly with <code>target=</code>:</p>
+<pre><span class="k">link</span>  <span class="p">home/.zshrc</span>  <span class="n">target=~/.config/zsh/.zshrc</span></pre>
+  </section>
+
+  <!-- primitives -->
+  <section id="primitives">
+    <div class="section-label">The d0tfile</div>
+    <h2>File primitives</h2>
+
+    <div class="keyword-grid">
+      <div class="keyword-card">
+        <div class="kw">link <span class="args">&lt;source&gt; [target=&lt;path&gt;]</span></div>
+        <p>Create a symlink at the target pointing to the source in the repo.
+        Live edits in the repo are immediately visible. Default for most files.</p>
+      </div>
+      <div class="keyword-card">
+        <div class="kw">copy <span class="args">&lt;source&gt; [mode=&lt;octal&gt;] [target=&lt;path&gt;]</span></div>
+        <p>Copy bytes to the target. Use for files that must not be symlinks —
+        apps that rewrite their config, or files needing <code>chmod 600</code>
+        like <code>~/.ssh/config</code>.</p>
+      </div>
+      <div class="keyword-card">
+        <div class="kw">tmpl <span class="args">&lt;source&gt; [target=&lt;path&gt;]</span></div>
+        <p>Render the source with Go <code>text/template</code> and write to
+        the target. Variables come from <code>vars.toml</code>. Also available
+        as <code>template</code>.</p>
+      </div>
+      <div class="keyword-card">
+        <div class="kw">fragment <span class="args">&lt;source&gt; [target=&lt;path&gt;] [marker=&lt;id&gt;]</span></div>
+        <p>Inject a managed block into a file d0t doesn't own. The block is
+        delimited by marker comments and can be updated or removed without
+        touching the rest of the file.</p>
+      </div>
+    </div>
+
+    <h3>link</h3>
+    <p>The default primitive. Edits in the repo are immediately live since the
+    target is a symlink pointing into the repo. If a file already exists at
+    the target and is not a d0t-managed symlink, <code>apply</code> fails
+    unless you pass <code>--adopt</code> (backs up the existing file) or
+    <code>--force</code> (overwrites without backup).</p>
+
+    <h3>copy</h3>
+    <p>Copies the source bytes atomically to the target. The <code>mode=</code>
+    option sets the target's permission bits in octal — the source file must
+    also have those bits set (d0t preserves source mode). Change detection is
+    by SHA-256 hash so unchanged files are never written.</p>
+
+<pre><span class="k">copy</span>  <span class="p">home/.ssh/config</span>   <span class="n">mode=0600</span>
+<span class="k">copy</span>  <span class="p">home/.gnupg/gpg.conf</span>  <span class="n">mode=0600</span></pre>
+
+    <h3>tmpl / template</h3>
+    <p>Renders the source through Go's <code>text/template</code>. Variables
+    are merged from all active profiles' <code>vars.toml</code> files (later
+    profiles override earlier ones) and are accessed as <code>.Vars.&lt;key&gt;</code>.
+    Built-in variables (<code>.Host</code>, <code>.OS</code>, <code>.User</code>,
+    <code>.Home</code>) are always available.</p>
+
+<pre><span class="c"># base/home/.gitconfig.tmpl</span>
+[user]
+  name  = {{ .User }}
+  email = {{ .Vars.email }}
+[core]
+  editor = {{ default .Vars.editor "vim" }}</pre>
+
+    <h3>fragment</h3>
+    <p>The source file starts with a header line declaring the target and a
+    unique marker:</p>
+<pre><span class="c"># d0t: target=~/.zshrc marker=local-bin</span>
+export PATH="$HOME/.local/bin:$PATH"</pre>
+    <p>d0t injects — or replaces — the managed block in the target file:</p>
+<pre><span class="c"># &gt;&gt;&gt; d0t:local-bin &gt;&gt;&gt;</span>
+export PATH="$HOME/.local/bin:$PATH"
+<span class="c"># &lt;&lt;&lt; d0t:local-bin &lt;&lt;&lt;</span></pre>
+    <p>Comment style is auto-detected from the target file extension
+    (<code>#</code> default, <code>//</code> for Go/JS/TS, <code>--</code> for
+    Lua/SQL).</p>
+  </section>
+
+  <!-- packages -->
+  <section id="packages">
+    <div class="section-label">The d0tfile</div>
+    <h2>Package management</h2>
+
+    <p>Packages accumulate across all active profiles — a formula declared in
+    <code>base/d0tfile</code> and another in <code>hosts/work-mbp/d0tfile</code>
+    are both installed, with duplicates silently deduped. Managers not present
+    on the host are silently skipped.</p>
+
+    <table>
+      <tr><th>Keyword</th><th>Manager</th><th>Example</th></tr>
+      <tr><td>brew</td><td>Homebrew formulae</td><td><code>brew ripgrep neovim bat</code></td></tr>
+      <tr><td>cask</td><td>Homebrew casks</td><td><code>cask ghostty raycast</code></td></tr>
+      <tr><td>tap</td><td>Homebrew taps</td><td><code>tap homebrew/cask-fonts</code></td></tr>
+      <tr><td>apt</td><td>apt-get (Linux)</td><td><code>apt ripgrep fd-find</code></td></tr>
+      <tr><td>mas</td><td>Mac App Store</td><td><code>mas 497799835 Xcode</code></td></tr>
+    </table>
+
+<pre><span class="k">tap</span>   <span class="s">homebrew/cask-fonts</span>
+<span class="k">brew</span>  <span class="s">ripgrep neovim bat fzf lazygit starship tmux fnm mise gh jq</span>
+<span class="k">cask</span>  <span class="s">ghostty raycast font-monaspice-nerd-font</span>
+<span class="k">apt</span>   <span class="s">ripgrep neovim bat fzf</span>
+<span class="k">mas</span>   <span class="n">497799835</span>  <span class="s">Xcode</span>
+<span class="k">mas</span>   <span class="n">1295203466</span> <span class="s">Microsoft Remote Desktop</span></pre>
+
+    <div class="callout info">
+      <p><strong>Multiple items per line.</strong> MAS app names can contain
+      spaces. Everything after the numeric ID is the name.</p>
+    </div>
+  </section>
+
+  <!-- hooks -->
+  <section id="hooks">
+    <div class="section-label">The d0tfile</div>
+    <h2>Hooks</h2>
+
+    <p>Hook scripts run at lifecycle phases. The script path is relative to the
+    profile directory.</p>
+
+<pre><span class="k">hook</span>  <span class="n">pre-apply</span>   <span class="p">hooks/pre-apply.sh</span>
+<span class="k">hook</span>  <span class="n">post-apply</span>  <span class="p">hooks/post-apply.sh</span>
+<span class="k">hook</span>  <span class="n">post-apply</span>  <span class="p">hooks/reload-shell.sh</span>  <span class="n">optional</span>
+<span class="k">hook</span>  <span class="n">pre-remove</span>  <span class="p">hooks/pre-remove.sh</span>
+<span class="k">hook</span>  <span class="n">post-remove</span> <span class="p">hooks/post-remove.sh</span></pre>
+
+    <p>Multiple hooks for the same phase are allowed and run in declaration
+    order. Adding <code>optional</code> means a non-zero exit is logged but
+    does not abort the apply.</p>
+
+    <h3>Environment variables</h3>
+    <table>
+      <tr><th>Variable</th><th>Value</th></tr>
+      <tr><td>D0T_REPO</td><td>Absolute path to the dotfiles repo</td></tr>
+      <tr><td>D0T_HOST</td><td>Short hostname (no domain)</td></tr>
+      <tr><td>D0T_OS</td><td>darwin / linux</td></tr>
+      <tr><td>D0T_PROFILE</td><td>Name of the profile this hook belongs to</td></tr>
+      <tr><td>D0T_DRY_RUN</td><td>true when running under --dry-run</td></tr>
+    </table>
+  </section>
+
+  <!-- profiles -->
+  <section id="profiles">
+    <div class="section-label">Profiles</div>
+    <h2>Profile layering</h2>
+
+    <p>Profiles are directories inside the repo. The default resolution order is:</p>
+<pre>base/           <span class="c"># always applied</span>
+os/darwin/      <span class="c"># applied on macOS (runtime.GOOS == "darwin")</span>
+os/linux/       <span class="c"># applied on Linux</span>
+hosts/work-mbp/ <span class="c"># applied when hostname == "work-mbp"</span></pre>
+
+    <p>For any target path, the <strong>last</strong> profile that declares it wins.
+    Hooks and packages accumulate from all active profiles.</p>
+
+    <p>Profiles without a <code>d0tfile</code> are silently skipped — they
+    contribute nothing to the plan.</p>
+
+    <h3>Override the profile stack</h3>
+    <p>In <code>d0t.toml</code>:</p>
+<pre><span class="n">profiles</span> = [<span class="s">"base"</span>, <span class="s">"os/darwin"</span>, <span class="s">"work"</span>, <span class="s">"hosts/work-mbp"</span>]</pre>
+
+    <p>Or at the command line:</p>
+<pre>d0t --profile base,work apply</pre>
+
+    <h3>Example: work vs home</h3>
+<pre>repo/
+├── base/d0tfile         <span class="c"># shared config</span>
+├── os/darwin/d0tfile    <span class="c"># macOS-specific additions</span>
+└── hosts/
+    ├── home-mbp/d0tfile <span class="c"># personal machine extras</span>
+    └── work-mbp/d0tfile <span class="c"># work machine extras + overrides</span></pre>
+  </section>
+
+  <!-- roots -->
+  <section id="roots">
+    <div class="section-label">Profiles</div>
+    <h2>Filesystem roots</h2>
+
+    <p>The leading component of a source path maps to a filesystem destination.
+    Custom roots can be added in <code>d0t.toml</code>.</p>
+
+    <table>
+      <tr><th>Source prefix</th><th>Default destination</th><th>Notes</th></tr>
+      <tr><td>home/</td><td>$HOME</td><td></td></tr>
+      <tr><td>xdg/</td><td>$XDG_CONFIG_HOME (~/.config)</td><td></td></tr>
+      <tr><td>etc/</td><td>/etc</td><td>Requires sudo</td></tr>
+      <tr><td>root/</td><td>/</td><td>Requires sudo</td></tr>
+      <tr><td>fragments/</td><td>From file frontmatter</td><td></td></tr>
+    </table>
+
+    <h3>Custom roots</h3>
+<pre><span class="c"># d0t.toml</span>
+[roots]
+caches = <span class="s">"${XDG_CACHE_HOME:-$HOME/.cache}"</span>
+data   = <span class="s">"${XDG_DATA_HOME:-$HOME/.local/share}"</span></pre>
+
+<pre><span class="c"># d0tfile</span>
+<span class="k">link</span>  <span class="p">caches/nvim</span>
+<span class="k">link</span>  <span class="p">data/fonts</span></pre>
+  </section>
+
+  <!-- secrets -->
+  <section id="secrets">
+    <div class="section-label">Features</div>
+    <h2>Secret management</h2>
+
+    <p>The <code>secret()</code> template function resolves secrets at render time
+    from a configured backend. Secrets never touch the repo or the state file.</p>
+
+<pre><span class="c"># base/home/.gitconfig.tmpl</span>
+[user]
+  email      = {{ secret <span class="s">"op://Personal/GitHub/email"</span> }}
+  signingkey = {{ secret <span class="s">"keychain://gpg/signing-key"</span> }}
+
+[github]
+  token = {{ secret <span class="s">"env://GITHUB_TOKEN"</span> }}</pre>
+
+    <h3>Key prefixes</h3>
+    <table>
+      <tr><th>Prefix</th><th>Backend</th><th>Example</th></tr>
+      <tr><td>op://</td><td>1Password CLI</td><td><code>op://Personal/Item/field</code></td></tr>
+      <tr><td>keychain://</td><td>macOS Keychain</td><td><code>keychain://service/account</code></td></tr>
+      <tr><td>env://</td><td>Environment variable</td><td><code>env://MY_TOKEN</code></td></tr>
+      <tr><td>pass://</td><td>pass</td><td><code>pass://path/to/secret</code></td></tr>
+      <tr><td>(bare)</td><td>Configured default</td><td><code>github-token</code></td></tr>
+    </table>
+
+    <h3>Configure the default backend</h3>
+<pre><span class="c"># d0t.toml</span>
+[secrets]
+backend = <span class="s">"op"</span>       <span class="c"># 1Password as default for bare keys</span>
+<span class="c"># backend = "keychain"</span>
+<span class="c"># backend = "env"</span>
+<span class="c"># backend = "pass"</span></pre>
+
+    <div class="callout tip">
+      <p><strong>Caching.</strong> Each unique key is resolved once per apply run.
+      <code>op read</code> fires at most once per key regardless of how many
+      templates reference it.</p>
+    </div>
+  </section>
+
+  <!-- templates -->
+  <section id="templates">
+    <div class="section-label">Features</div>
+    <h2>Templates</h2>
+
+    <p>Template files (<code>tmpl</code> keyword) use Go's <code>text/template</code>
+    syntax. Variables come from <code>vars.toml</code> files in each active
+    profile, merged in profile order.</p>
+
+<pre><span class="c"># base/vars.toml</span>
+email  = <span class="s">"you@example.com"</span>
+editor = <span class="s">"nvim"</span></pre>
+
+<pre><span class="c"># hosts/work-mbp/vars.toml — overrides base</span>
+email = <span class="s">"you@company.com"</span></pre>
+
+    <h3>Built-in variables</h3>
+    <table>
+      <tr><th>Variable</th><th>Value</th></tr>
+      <tr><td>.Host</td><td>Short hostname (no domain)</td></tr>
+      <tr><td>.OS</td><td>darwin / linux / windows</td></tr>
+      <tr><td>.Arch</td><td>amd64 / arm64</td></tr>
+      <tr><td>.User</td><td>Current username</td></tr>
+      <tr><td>.Home</td><td>$HOME</td></tr>
+      <tr><td>.Vars.&lt;key&gt;</td><td>User-defined vars from vars.toml</td></tr>
+    </table>
+
+    <h3>Built-in functions</h3>
+    <table>
+      <tr><th>Function</th><th>Description</th></tr>
+      <tr><td>default .Vars.x "fallback"</td><td>Return value or fallback if empty</td></tr>
+      <tr><td>env "VAR_NAME"</td><td>Read an environment variable</td></tr>
+      <tr><td>secret "op://..."</td><td>Resolve a secret from backend</td></tr>
+      <tr><td>lower / upper / trim</td><td>String helpers</td></tr>
+      <tr><td>joinPath "a" "b"</td><td>OS-aware path join</td></tr>
+    </table>
+  </section>
+
+  <!-- fragments -->
+  <section id="fragments">
+    <div class="section-label">Features</div>
+    <h2>Fragments</h2>
+
+    <p>Fragments let d0t manage a block inside a file it doesn't own. Useful for
+    appending to system files or files managed by other tools.</p>
+
+    <h3>Fragment file format</h3>
+    <p>The source file starts with a single header line:</p>
+<pre><span class="c"># d0t: target=~/.zshrc marker=local-bin</span>
+export PATH="$HOME/.local/bin:$PATH"</pre>
+
+    <p><code>target</code> is the file to inject into. <code>marker</code> is a
+    unique ID for this block within that file — it's how d0t finds and replaces
+    the block on subsequent applies.</p>
+
+    <h3>The managed block</h3>
+    <p>d0t writes the block surrounded by marker comments:</p>
+<pre><span class="c"># &gt;&gt;&gt; d0t:local-bin &gt;&gt;&gt;</span>
+export PATH="$HOME/.local/bin:$PATH"
+<span class="c"># &lt;&lt;&lt; d0t:local-bin &lt;&lt;&lt;</span></pre>
+
+    <p>Subsequent applies replace the block in place. <code>d0t remove</code>
+    deletes the block, leaving everything else in the file untouched.</p>
+
+    <h3>Comment style detection</h3>
+    <table>
+      <tr><th>Extension</th><th>Comment style</th></tr>
+      <tr><td>.sh .zsh .bash .conf .toml .yaml .py .rb</td><td>#</td></tr>
+      <tr><td>.lua .sql</td><td>--</td></tr>
+      <tr><td>.vim</td><td>"</td></tr>
+      <tr><td>.go .js .ts .rs .c .cpp .java</td><td>//</td></tr>
+    </table>
+  </section>
+
+  <!-- commands -->
+  <section id="commands">
+    <div class="section-label">Reference</div>
+    <h2>Commands</h2>
+
+    <table class="cmd-table">
+      <tr><th>Command</th><th>Description</th></tr>
+      <tr><td>d0t apply</td><td>Converge managed targets to the declared state</td></tr>
+      <tr><td>d0t plan</td><td>Show what apply would do without making changes</td></tr>
+      <tr><td>d0t status</td><td>Show current state of managed targets</td></tr>
+      <tr><td>d0t diff [path]</td><td>Show content diff for templates and copies</td></tr>
+      <tr><td>d0t sync</td><td>Git pull the repo then re-apply</td></tr>
+      <tr><td>d0t upgrade</td><td>Run package manager upgrades (brew upgrade, mas upgrade)</td></tr>
+      <tr><td>d0t update</td><td>Rebuild the d0t binary from source</td></tr>
+      <tr><td>d0t adopt &lt;path&gt;</td><td>Move a file into the repo and replace with a symlink</td></tr>
+      <tr><td>d0t remove</td><td>Remove everything d0t manages (uses tracked state)</td></tr>
+      <tr><td>d0t init</td><td>Scaffold a new repo with the standard directory layout</td></tr>
+      <tr><td>d0t doctor</td><td>Sanity-check the repo and host environment</td></tr>
+    </table>
+
+    <h3>apply flags</h3>
+    <table class="cmd-table">
+      <tr><th>Flag</th><th>Description</th></tr>
+      <tr><td>--no-pkg</td><td>Skip package installation</td></tr>
+      <tr><td>--no-hooks</td><td>Skip exec hooks</td></tr>
+      <tr><td>--force</td><td>Overwrite unmanaged files at target paths</td></tr>
+      <tr><td>--adopt</td><td>Back up unmanaged files before overwriting</td></tr>
+    </table>
+
+    <h3>sync flags</h3>
+    <table class="cmd-table">
+      <tr><th>Flag</th><th>Description</th></tr>
+      <tr><td>--no-pull</td><td>Skip git pull (just re-apply)</td></tr>
+      <tr><td>--no-apply</td><td>Skip apply (just pull)</td></tr>
+    </table>
+  </section>
+
+  <!-- flags -->
+  <section id="flags">
+    <div class="section-label">Reference</div>
+    <h2>Global flags</h2>
+
+    <p>All global flags are placed <em>before</em> the subcommand:</p>
+<pre>d0t --dry-run --verbose apply</pre>
+
+    <table class="cmd-table">
+      <tr><th>Flag</th><th>Description</th></tr>
+      <tr><td>--repo PATH</td><td>Path to the dotfiles repo (default: $D0T_REPO or ~/.d0t)</td></tr>
+      <tr><td>--profile LIST</td><td>Comma-separated profile override</td></tr>
+      <tr><td>--dry-run</td><td>Show what would happen without modifying the filesystem</td></tr>
+      <tr><td>--verbose</td><td>Show no-op actions and extra detail</td></tr>
+      <tr><td>--yes</td><td>Skip confirmation prompts</td></tr>
+    </table>
+  </section>
+
+  <!-- config -->
+  <section id="config">
+    <div class="section-label">Reference</div>
+    <h2>d0t.toml</h2>
+
+    <p>An optional file at the repo root. All fields are optional.</p>
+
+<pre><span class="c"># d0t.toml</span>
+
+<span class="c"># Override the default profile resolution order</span>
+profiles = [<span class="s">"base"</span>, <span class="s">"os/darwin"</span>, <span class="s">"work"</span>, <span class="s">"hosts/work-mbp"</span>]
+
+<span class="c"># Add custom filesystem roots</span>
+[roots]
+caches = <span class="s">"${XDG_CACHE_HOME:-$HOME/.cache}"</span>
+data   = <span class="s">"${XDG_DATA_HOME:-$HOME/.local/share}"</span>
+
+<span class="c"># Secret backend for {{ secret "bare-key" }} calls</span>
+[secrets]
+backend = <span class="s">"op"</span>
+
+<span class="c"># Source path for d0t update (self-rebuild)</span>
+[self]
+source = <span class="s">"~/Dev/d0t"</span></pre>
+  </section>
+
+  <!-- footer -->
+  <footer>
+    <div>d0t · MIT License · <a href="https://github.com/callmeradical/d0t">github.com/callmeradical/d0t</a></div>
+    <div><a href="migration-from-stow.html">Migration guide →</a></div>
+  </footer>
+
+</main>
+
+<script>
+  // Highlight active nav link on scroll
+  const sections = document.querySelectorAll('section[id], div[id]');
+  const navLinks = document.querySelectorAll('nav a[href^="#"]');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const active = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
