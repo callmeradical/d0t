@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"d0t/internal/plan"
+	"github.com/callmeradical/d0t/internal/plan"
 )
 
 // ---------------------------------------------------------------------------

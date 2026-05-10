@@ -18,7 +18,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"d0t/internal/repo"
+	"github.com/callmeradical/d0t/internal/repo"
 )
 
 // Profile is a single layer in the resolved stack.

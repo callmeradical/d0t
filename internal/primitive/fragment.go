@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"d0t/internal/fsutil"
-	"d0t/internal/plan"
+	"github.com/callmeradical/d0t/internal/fsutil"
+	"github.com/callmeradical/d0t/internal/plan"
 )
 
 // FragmentHeader is the parsed frontmatter from a .fragment source file.

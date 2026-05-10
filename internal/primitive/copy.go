@@ -6,8 +6,8 @@ import (
 	"io/fs"
 	"os"
 
-	"d0t/internal/fsutil"
-	"d0t/internal/plan"
+	"github.com/callmeradical/d0t/internal/fsutil"
+	"github.com/callmeradical/d0t/internal/plan"
 )
 
 // Copy renders bytes from Source into Target. Use when the file cannot be a

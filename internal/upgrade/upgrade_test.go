@@ -4,7 +4,7 @@ package upgrade_test
 import (
 	"testing"
 
-	"d0t/internal/upgrade"
+	"github.com/callmeradical/d0t/internal/upgrade"
 )
 
 // ---------------------------------------------------------------------------

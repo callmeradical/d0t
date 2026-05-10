@@ -3,7 +3,7 @@ package secrets_test
 import (
 	"testing"
 
-	"d0t/internal/secrets"
+	"github.com/callmeradical/d0t/internal/secrets"
 )
 
 // ---------------------------------------------------------------------------

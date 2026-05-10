@@ -9,8 +9,8 @@ import (
 	"io/fs"
 	"os"
 
-	"d0t/internal/fsutil"
-	"d0t/internal/plan"
+	"github.com/callmeradical/d0t/internal/fsutil"
+	"github.com/callmeradical/d0t/internal/plan"
 )
 
 // Link is the default file primitive: it creates a symlink at Target

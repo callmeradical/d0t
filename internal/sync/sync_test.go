@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"d0t/internal/sync"
+	"github.com/callmeradical/d0t/internal/sync"
 )
 
 // ---------------------------------------------------------------------------

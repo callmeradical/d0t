@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"d0t/internal/plan"
+	"github.com/callmeradical/d0t/internal/plan"
 )
 
 // knownPhases lists the recognized hook phase prefixes in execution order.

@@ -4,7 +4,7 @@ package selfupdate_test
 import (
 	"testing"
 
-	"d0t/internal/selfupdate"
+	"github.com/callmeradical/d0t/internal/selfupdate"
 )
 
 // ---------------------------------------------------------------------------

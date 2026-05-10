@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"d0t/internal/manifest"
-	"d0t/internal/plan"
-	"d0t/internal/profile"
-	"d0t/internal/repo"
-	"d0t/internal/secrets"
-	"d0t/internal/vars"
+	"github.com/callmeradical/d0t/internal/manifest"
+	"github.com/callmeradical/d0t/internal/plan"
+	"github.com/callmeradical/d0t/internal/profile"
+	"github.com/callmeradical/d0t/internal/repo"
+	"github.com/callmeradical/d0t/internal/secrets"
+	"github.com/callmeradical/d0t/internal/vars"
 )
 
 // NewProfileReaderBuilder returns the single plan.ProfileReaderBuilder used

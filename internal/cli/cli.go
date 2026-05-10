@@ -13,16 +13,16 @@ import (
 	"sort"
 	"strings"
 
-	"d0t/internal/fsutil"
-	"d0t/internal/initrepo"
-	"d0t/internal/plan"
-	"d0t/internal/primitive"
-	"d0t/internal/repo"
-	"d0t/internal/selfupdate"
-	"d0t/internal/state"
-	d0tsync "d0t/internal/sync"
-	"d0t/internal/ui"
-	"d0t/internal/upgrade"
+	"github.com/callmeradical/d0t/internal/fsutil"
+	"github.com/callmeradical/d0t/internal/initrepo"
+	"github.com/callmeradical/d0t/internal/plan"
+	"github.com/callmeradical/d0t/internal/primitive"
+	"github.com/callmeradical/d0t/internal/repo"
+	"github.com/callmeradical/d0t/internal/selfupdate"
+	"github.com/callmeradical/d0t/internal/state"
+	d0tsync "github.com/callmeradical/d0t/internal/sync"
+	"github.com/callmeradical/d0t/internal/ui"
+	"github.com/callmeradical/d0t/internal/upgrade"
 )
 
 // ErrUsage signals that the user invoked d0t incorrectly. main() exits 2.

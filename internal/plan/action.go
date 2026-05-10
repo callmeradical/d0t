@@ -3,8 +3,8 @@ package plan
 import (
 	"context"
 
-	"d0t/internal/repo"
-	"d0t/internal/ui"
+	"github.com/callmeradical/d0t/internal/repo"
+	"github.com/callmeradical/d0t/internal/ui"
 )
 
 // Action is anything the plan can do: link a file, render a template, run a

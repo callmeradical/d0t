@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"d0t/internal/state"
+	"github.com/callmeradical/d0t/internal/state"
 )
 
 // ---------------------------------------------------------------------------

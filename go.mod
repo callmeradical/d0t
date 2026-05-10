@@ -1,4 +1,4 @@
-module d0t
+module github.com/callmeradical/d0t
 
 go 1.26.2
 

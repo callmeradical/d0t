@@ -3,7 +3,7 @@ package primitive_test
 import (
 	"testing"
 
-	"d0t/internal/primitive"
+	"github.com/callmeradical/d0t/internal/primitive"
 )
 
 // MergeManifests is used internally by PkgActionsFromDeclarations to

@@ -7,9 +7,9 @@ import (
 	"sort"
 	"strings"
 
-	"d0t/internal/profile"
-	"d0t/internal/repo"
-	"d0t/internal/ui"
+	"github.com/callmeradical/d0t/internal/profile"
+	"github.com/callmeradical/d0t/internal/repo"
+	"github.com/callmeradical/d0t/internal/ui"
 )
 
 // ProfileReader reads one profile's d0tfile and returns the actions it

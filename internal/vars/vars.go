@@ -11,7 +11,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"d0t/internal/profile"
+	"github.com/callmeradical/d0t/internal/profile"
 )
 
 // Map is a flat string→string variable map used in template rendering.

@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"d0t/internal/plan"
-	"d0t/internal/primitive"
-	"d0t/internal/secrets"
-	"d0t/internal/vars"
+	"github.com/callmeradical/d0t/internal/plan"
+	"github.com/callmeradical/d0t/internal/primitive"
+	"github.com/callmeradical/d0t/internal/secrets"
+	"github.com/callmeradical/d0t/internal/vars"
 )
 
 // ---------------------------------------------------------------------------

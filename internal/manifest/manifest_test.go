@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"d0t/internal/manifest"
+	"github.com/callmeradical/d0t/internal/manifest"
 )
 
 // ---------------------------------------------------------------------------

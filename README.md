@@ -15,13 +15,13 @@ d0t adopt ~/.zshrc   # pull an existing file into the repo
 ## Install
 
 ```sh
-go install d0t/cmd/d0t@latest
+go install github.com/callmeradical/d0t/cmd/d0t@latest
 ```
 
 Or build from source:
 
 ```sh
-git clone https://github.com/callmeradical/d0t
+git clone https://github.com/callmeradical/d0t ~/.d0t-src
 cd d0t
 go build -o ~/.local/bin/d0t ./cmd/d0t
 ```

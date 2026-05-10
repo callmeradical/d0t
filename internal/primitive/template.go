@@ -10,10 +10,10 @@ import (
 	"strings"
 	"text/template"
 
-	"d0t/internal/fsutil"
-	"d0t/internal/plan"
-	"d0t/internal/secrets"
-	"d0t/internal/vars"
+	"github.com/callmeradical/d0t/internal/fsutil"
+	"github.com/callmeradical/d0t/internal/plan"
+	"github.com/callmeradical/d0t/internal/secrets"
+	"github.com/callmeradical/d0t/internal/vars"
 )
 
 // BuiltinVars are the host-level variables injected into every template

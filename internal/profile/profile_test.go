@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"d0t/internal/profile"
-	"d0t/internal/repo"
+	"github.com/callmeradical/d0t/internal/profile"
+	"github.com/callmeradical/d0t/internal/repo"
 )
 
 // ---------------------------------------------------------------------------

@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"d0t/internal/plan"
-	"d0t/internal/primitive"
-	"d0t/internal/repo"
-	"d0t/internal/ui"
+	"github.com/callmeradical/d0t/internal/plan"
+	"github.com/callmeradical/d0t/internal/primitive"
+	"github.com/callmeradical/d0t/internal/repo"
+	"github.com/callmeradical/d0t/internal/ui"
 )
 
 // ---------------------------------------------------------------------------

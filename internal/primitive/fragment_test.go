@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"d0t/internal/plan"
-	"d0t/internal/primitive"
+	"github.com/callmeradical/d0t/internal/plan"
+	"github.com/callmeradical/d0t/internal/primitive"
 )
 
 // ---------------------------------------------------------------------------
