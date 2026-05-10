@@ -1,0 +1,8 @@
+# binary
+d0t
+
+# test artifacts
+*.d0t-backup-*
+
+# macOS
+.DS_Store
